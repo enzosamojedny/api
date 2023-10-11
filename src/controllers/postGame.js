@@ -11,9 +11,17 @@ const postGame = async (req, res) => {
       rating,
       genres,
     } = req.body;
-    const genresFromDB = await Genre.findAll({ where: { name: genres } });
+    const existingVideogame = await Videogame.findOne({ where: { name } });
 
-    const createVideogame = await Videogame.create({
+    if (existingVideogame) {
+      const existingGenres = await Genre.findAll({ where: { name: genres } });
+
+      await existingVideogame.setGenres(existingGenres);
+
+      return res.status(200).json(existingVideogame);
+    }
+
+    const createdVideogame = await Videogame.create({
       name,
       description,
       platforms,
@@ -21,12 +29,19 @@ const postGame = async (req, res) => {
       released,
       rating,
     });
-    await createVideogame.addGenres(genresFromDB);
 
-    res.status(201).json(createVideogame);
+    const existingGenres = await Genre.findAll({ where: { name: genres } });
+
+    await createdVideogame.addGenres(existingGenres);
+
+    return res.status(201).json(createdVideogame);
   } catch (error) {
-    res.status(404).json({ error: "Data missing to create a new videogame" });
+    return res
+      .status(400)
+      .json({ error: "Missing data to create a new videogame" });
   }
 };
 
-module.exports = { postGame };
+module.exports = {
+  postGame,
+};
