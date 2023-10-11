@@ -1,12 +1,16 @@
 const axios = require("axios");
 const { Videogame, Genre } = require("../db");
+const { Op } = require("sequelize");
 
 const getQuery = async (req, res) => {
   try {
     const { name } = req.query;
     const limit = 15;
+    const lowerCase = name.toLowerCase();
     const videogamesDb = await Videogame.findAll({
-      where: { name },
+      where: {
+        name: { [Op.iLike]: `%${lowerCase}%` },
+      },
       include: Genre,
     });
     if (videogamesDb.length) {
@@ -43,7 +47,7 @@ const getQuery = async (req, res) => {
       return;
     }
   } catch (error) {
-    res.status(403).json({ error: "The name you entered is not available" });
+    res.status(403).json({ error: error.message });
   }
 };
 

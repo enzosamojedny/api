@@ -11,7 +11,6 @@ const postGame = async (req, res) => {
       rating,
       genres,
     } = req.body;
-    console.log("genre", genres);
     const genresFromDB = await Genre.findAll({ where: { name: genres } });
 
     const createVideogame = await Videogame.create({
